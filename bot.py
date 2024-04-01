@@ -1,47 +1,74 @@
-# Zawsze to trzeba dodac, zeby program wiedzial co ty odpierdalasz.
+# Import niezbędnych modułów
 import logging
 from datetime import datetime
-from telegram import Update
-from telegram.ext import filters, MessageHandler, CommandHandler, Application, ContextTypes, ApplicationBuilder
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import MessageHandler, CommandHandler, Application, ContextTypes, ApplicationBuilder, CallbackQueryHandler, filters
 
-# tajne haslo dostepu do twojego bota, zeby telegram w ogole wiedzial jakiego bota chcesz ruszyc
-
+# Twój tajny klucz dostępu do API Telegrama
 API_KEY = '6991687705:AAFOkG3UbqmTSH5qOrnqyWNLMGQaaVRBWEE'
 
-# REAKCJE (czyli jak program ma sie zachowywac w efekcie czegostam)
-async def bodas(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="moja matka sie kurwi za regalami w kaufie ale udaje ze o tym nie wiem")
+# Reakcja na wiadomość "/start"
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="cwelozo44200000")
-# fajne, sam skleilem -- za kazdym razem jak ktos wysle wiadomosc to widac cala nazwe i tresc
+    buttons = [
+        [
+            InlineKeyboardButton(text="TAK ✅", callback_data="tak"),
+            InlineKeyboardButton(text="NIE ❌", callback_data="nie"),
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(buttons)
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="Siemka! 👋\nChciałbyś złożyć u nas zamówienie? 🇨🇳",
+        reply_markup=reply_markup,
+    )
+
+# Reakcja na naciśnięcie przycisku "Tak"
+async def takzakupy(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    await context.bot.send_message(
+        chat_id=query.message.chat_id,
+        text="jestem bodas i kurwi mi sie matka",
+    )
+
+# Reakcja na naciśnięcie przycisku "Nie"
+async def niezakupy(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    await context.bot.send_message(
+        chat_id=query.message.chat_id,
+        text="to spierdalaj",
+    )
+
+# Reakcja na inne wiadomości
 async def konsolaszmeges(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(f"{update.message.chat.full_name} - {update.message.text} [{data_i_godzina}]")
+
+# Reakcja na nieznane komendy
 async def nieznana(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="co ty pierdolisz dziadzie jebany")
     print(f"{update.message.chat.full_name} - {update.message.text} [ta pierdolona komenda nawet nie istnieje]")
 
+# Pobranie aktualnej daty i godziny
 aktualna_data = datetime.now()
 data_i_godzina = aktualna_data.strftime("%H:%M (%Y-%m-%d)")
 
-# to jest mega wazne, wszystko co sie dzieje w programie musi byc podpiete pod tego if'a
-
+# Uruchomienie bota
 if __name__ == '__main__':
     print("Bot startuje")
     application = ApplicationBuilder().token(API_KEY).build()
-    
-    # Tu opisujesz akcje (zeby program wiedzial kiedy i co ma robic)
+
+    # Dodanie obsługi komend i przycisków
     start_handler = CommandHandler('start', start)
-    kutasowcy = MessageHandler(filters.Text("jajeczko"), bodas)
-    bodas_handler = CommandHandler('chujek', bodas)
     konsola_handler = MessageHandler(filters.TEXT, konsolaszmeges)
     nieznanakomenda = MessageHandler(filters.COMMAND, nieznana)
-    
-    # deklaruje akcje (zeby program wiedzial czy tamto co pisales wczesniej jest dla beki czy na serio)
+    takzakupy_handler = CallbackQueryHandler(takzakupy, pattern="tak")
+    niezakupy_handler = CallbackQueryHandler(niezakupy, pattern="nie")
+
     application.add_handler(start_handler)
-    application.add_handler(bodas_handler)
-    application.add_handler(kutasowcy)
     application.add_handler(konsola_handler)
     application.add_handler(nieznanakomenda)
-    
-    # info co ile ma sie odswiezac telegram
+    application.add_handler(takzakupy_handler)
+    application.add_handler(niezakupy_handler)
+
     application.run_polling()
