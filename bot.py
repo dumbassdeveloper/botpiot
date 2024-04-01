@@ -26,7 +26,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # to jest mega wazne, wszystko co sie dzieje w programie musi byc podpiete pod tego if'a
 
 if __name__ == '__main__':
-    print("Bot startuje se hehe")
+    print("Bot startuje se")
     application = ApplicationBuilder().token(API_KEY).build()
     
     # Tu opisujesz akcje (zeby program wiedzial kiedy i co ma robic)
@@ -43,7 +43,3 @@ if __name__ == '__main__':
     
     # info co ile ma sie odswiezac telegram
     application.run_polling()
-
-
-
-    c
